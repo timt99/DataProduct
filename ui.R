@@ -2,25 +2,29 @@ library(shiny)
 
 shinyUI(pageWithSidebar(
   
-  headerPanel("Kidney Inflammatory prediction using a panel of expressed genes.\n
-               Kidney inflammatory is determined by geometric mean score.
-               \n Criteria: score >= 2 means inflammatory\n
-                            score <= 2 means noninflammatory\n"),
+  headerPanel("Kidney Inflammatory prediction using a panel of expressed genes.
+               Kidney inflammatory is determined by geometric mean score.\n
+               Criteria: if score >= 2, then inflammation,
+                         else score <= 2, noninflammation\n"),
   sidebarPanel(
-    textInput('vec1', 'Enter a vector of gene expressions(comma delimited), min= 3, max= 11)', "12,10,14"),
-    actionButton('goButton', 'Go!'),
+    
+    fileInput("file",'\n You can input a CSV file', accept = c('text/csv', 'text/comma-separated-values, text/plain')),
+
     dateInput("date", "Date:")
   ),
   
   mainPanel(
+    p("This is a test to predict kidney transplant inflammation using 11 gene expression values.", style="color:blue"),
+    p("The user will enter a CSV file containing gene expression values above 0 and the application will calculate the score to predict kidney inflammation.
+      ,", style= "color:blue"),
+    p("The input file is a .CSV file and will be in the same directory as the application,", style= "color:blue"),
     h3('Results of prediction'),
-    h4('You entered as string'),
-    verbatimTextOutput("oid1"),
-    verbatimTextOutput("oid2"),
-    h4('Length of expression vector\n'),
-    verbatimTextOutput("oid3"),
-    h4('Which resulted in a prediction of:\n'),
-    verbatimTextOutput("prediction")
+    h4('Which resulted in prediction scores below:\n'),
+    verbatimTextOutput("prediction"),
+    verbatimTextOutput("fileinput"),
+    h4('File is written to the working directory called newRQ.csv'),
+    h4('Please go to working directory using getwd() and open it now.')
+    
   )
 ))
 

@@ -1,3 +1,6 @@
+library(gdata)
+library(shiny)
+
 
 ## Calculate geometric mean
 inflammationRisk <- function(vec1)
@@ -12,49 +15,67 @@ inflammationRisk <- function(vec1)
 shinyServer(function(input, output) 
 {
   
-      output$oid1 <- renderText(
-        { 
-          input$goButton
-          isolate(paste(input$vect))
-          id1 <- input$vec1
-          print('As string')
-          print(id1)
-        }
-        )
-        
-           
-        
 
-  
-      output$oid2<-renderPrint(
-        {
+      output$fileinput <- renderPrint(
+        { if(is.null(input$file)) return()
+          inFile <- input$file
+          RQdata <- read.csv(inFile$datapath)
           
-          x <- as.numeric(unlist(strsplit(input$vec1,",")))
-          cat("As atomic expression vector:\n")
-          print(x)
-      
-        }
-        )
-      output$oid3 <-renderPrint(
-        {
+          #print(summary(RQdata))
           
-          x2 <- as.numeric(unlist(strsplit(input$vec1,",")))
-          len <- length(x2)
-          cat("Length of expression vector:\n")
-          print(len)
-        }
-        )
-      output$prediction <- renderPrint(
-        { 
-          pred <- inflammationRisk(as.numeric(unlist(strsplit(input$vec1,","))))
-          if( pred > 2.00)
-        { 
-          print(pred)
-          print("Kidney Inflammatory if score is >= 2.00")
-        }
-        else print("Kidney noninflammatory if score is <= 2.00")
+          #Calculate geometric mean or score
+          gm_mean <- function(x)
+          {   
+            x <- as.numeric(x)
+            x <- x[!is.na(x)]
+            prod(x)^(1/length(x))
+            
+          }
+          
+          
+          # Calculate the mean
+          meanRQ <- function(x)
+          {  x <- as.numeric(x)
+             x <- x[!is.na(x)]
+             mean(x)
+             
+          }
+          
+          #Predict inflammation based on score
+          predict <- function(n)
+          {
+             ifelse(n > 2, "inflame", "noninflame")
+            
+          }
+          
+          RQdata$CRMscore <- apply(RQdata[, 4:14], 1, gm_mean)
+          pred <- predict(RQdata$CRMscore)
+          RQmean <- apply(RQdata[, 4:14], 2, meanRQ)
+          header <- c("ID", "Sample Name", "18s", "CD6", "BASP1", "CXCL10", "CXCL9", "INPP5D", "ISG20", "LCK", "NKG7", "PSMB9", "RUNX3", "TAP1")
+          header2 <- c("CD6", "BASP1", "CXCL10", "CXCL9", "INPP5D", "ISG20", "LCK", "NKG7", "PSMB9", "RUNX3", "TAP1")
+          
+          indx <- sapply(RQdata, is.factor)
+          RQdata[indx] <- lapply(RQdata[indx], as.character)
+          DF1 <- rbind(header, RQdata)
+          #report <- cbind(DF1, pred)
+          DF1[] <- lapply(DF1, type.convert)
+          write.csv(DF1, "newRQ.csv")
+          print(RQdata$CRMscore)
+          sample <- RQdata[,2]
+          newdata <- rbind(sample, RQdata$CRMscore)
+          newdata2 <- rbind(newdata, pred)
+          print(newdata2)
+          DF2 <- rbind(header2, RQmean)
+          print(DF2)
+          highRQ <- max(RQmean)
+          print("Max Fold change:")
+          print(highRQ)
+          
+          
+          
+        })
       
-        }
-      )
+       
+      
   }
 )
