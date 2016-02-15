@@ -39,10 +39,11 @@ font-family: 'Helvetica'
 ## Guidelines to reproduce locally
 
 - Guidelines to reproduce this project locally on your PC.
-- To run locally this App on your computer, you do NOT need to fork this repo. You need the input .CSV file, the UI.R and server.R files in your working directory. 
+- To run locally this App on your computer, you do NOT need to fork this repo. You need the input .CSV file, the UI.R and server.R files in my github repo https://github.com/timt99/DataProduct 
 - Please follow these instructions:
   - Install the necessary packages to run RStudio's Shiny Server locally. Please  view the well documented requirements in the getting started page:               http://shiny.rstudio.com/articles/shinyapps.html
   - Run the following command in the RStudio: runApp()
+  - The shiny app is deploy in this link https://timtranshiny.shinyapps.io/product3/
   
 
 
