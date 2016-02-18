@@ -5,6 +5,8 @@ library(data.table)
 library(markdown)
 library(ggplot2)
 library(dplyr)
+library(RCurl)
+library(foreign)
 
 
 ## Calculate geometric mean
@@ -17,10 +19,16 @@ inflammationRisk <- function(vec1)
 }
 
 
-shinyServer(function(input, output) 
+shinyServer(function(input, output, session) 
 {
+     
+     observeEvent(input$button, {
+     session$sendCustomMessage(type = 'testmessage', message = 'Thank you for clicking' )
+     })
   
-      #Loading the selected file
+  
+       
+      #Loading the selected file.
       filedata <- reactive({
         infile <- input$datafile
         if(is.null(infile)){
@@ -30,26 +38,17 @@ shinyServer(function(input, output)
       
       })
       
+      filedata2 <- reactive({
+        infile <- input$outfile
+        if(is.null(infile)){
+          return(NULL)
+        }
+        read.csv(infile$datapath)
           
-        # function populate the column selectors
-       output$toCol <- renderUI({ 
-         df <- filedata()
-         if(is.null(df))
-           return(NULL)
-         items= names(df)
-         names(items) = items
-         selectInput("to", "To:", items)
-         })
+      })
       
-       output$fromCol <- renderUI({
-         df <-filedata()
-         if (is.null(df)) return(NULL)
-         
-         items=names(df)
-         names(items)=items
-         selectInput("from", "From:",items)
-         
-       })
+        
+    
        
        #The checkbox selector is used to determine whether we want an optional column
        output$amountflag <- renderUI({
@@ -75,13 +74,12 @@ shinyServer(function(input, output)
         filedata()
           })
        
-       # function triggered action when action button is pressed
-       geodata <- reactive({
-         if (input$getdata == 0) return(NULL)
-         df=filedata()
-         print(df)
-         if (is.null(df)) return(NULL)
-       })
+       
+          output$dataTable <- renderTable({
+            filedata2()
+          })
+       
+      
        
        output$fileinput <- renderPrint( 
          { if(is.null(input$datafile)) return()
@@ -124,20 +122,16 @@ shinyServer(function(input, output)
                 newdata3 <- cbind(newdata2, prediction)
                 newdata4 <- select(newdata3, Sample, CRMscore, prediction)
                 print(newdata4)
-    
-                df1 <- t(newdata2)
-                df1 <- as.data.frame(df1)
                 
-                 
-                 df1$Mean <- apply(df1[, 2:20], 1, meanRQ)
-                 newdata5 <- select(df1, Mean)
-                 
-                 print(newdata5)
+                RQMean <- apply(newdata2[, 2:12], 2, meanRQ)
+                print("Mean Expression of 11 genes:")
+                print(t(RQMean))
               
-                highRQ <- sort(newdata5$Mean)
-                print("Mean expression of Gene:")
-                print(highRQ)
-                write.csv(newdata3, "outputRQ.csv")
+              
+                 sortMean <- sort(RQMean)
+                 print("Rank of Gene by Expression:")
+                 print(sortMean)
+                 write.csv(newdata3, "outputRQ.csv")
               
                  
                  output$Histogram <- renderPlot(
@@ -148,8 +142,10 @@ shinyServer(function(input, output)
                  
                  output$`Prediction Result` <- renderPlot(
                    { 
-                     g <- ggplot(data= newdata3, aes(x=Sample, y=CRMscore))
-                     p <- g + geom_bar(colour= "blue",stat= "identity")+ labs(title = "Prediction Results")
+                     g <- ggplot(data= newdata3, aes(x=Sample, y=CRMscore, fill = CRMscore))
+                     p <- g + geom_bar(colour= "blue",stat= "identity")+ labs(title = "Prediction Results")+labs(x= "Patients")+ labs(y= "CRMScore") + theme_bw()+ theme_set(theme_grey(base_size= 18)) + theme(axis.text=element_text(size=12),
+                                                                                                                                                                                                                axis.title=element_text(size=18,face="bold"))
+                     
                      print(p)
                      
                       }
@@ -157,7 +153,7 @@ shinyServer(function(input, output)
                  
                  output$Plot3 <- renderPlot(
                    {
-                     hist(newdata5$Mean)
+                     hist(RQMean)
                    }
                  )
                  
