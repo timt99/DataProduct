@@ -7,7 +7,10 @@ library(ggplot2)
 library(dplyr)
 library(RCurl)
 library(foreign)
+<<<<<<< HEAD
 library(downloader)
+=======
+>>>>>>> a808d7e0d10014a0d1f08d11abac96ee68bc2c3b
 
 
 
@@ -17,6 +20,7 @@ shinyServer(function(input, output, session)
      observeEvent(input$button, {
      session$sendCustomMessage(type = 'testmessage', message = 'Thank you for clicking' )
      })
+<<<<<<< HEAD
      
        input_file <- reactive({
          url <- "https://raw.githubusercontent.com/timt99/DataProduct/master/Input.csv"
@@ -37,6 +41,20 @@ shinyServer(function(input, output, session)
       
         })
 
+=======
+  
+  
+       
+      #Loading the selected file.
+      filedata <- reactive({
+        infile <- input$datafile
+        if(is.null(infile)){
+          return(NULL)
+         }
+        read.csv(infile$datapath)
+      
+      })
+>>>>>>> a808d7e0d10014a0d1f08d11abac96ee68bc2c3b
       
       filedata2 <- reactive({
         infile <- input$outfile
@@ -44,6 +62,7 @@ shinyServer(function(input, output, session)
           return(NULL)
         }
         read.csv(infile$datapath)
+<<<<<<< HEAD
           
       })
       
@@ -78,6 +97,36 @@ shinyServer(function(input, output, session)
        # This previews the CSV data file
          output$filetable <- renderTable({
              filedata()
+=======
+          
+      })
+      
+        
+    
+       
+       #The checkbox selector is used to determine whether we want an optional column
+       output$amountflag <- renderUI({
+         df <-filedata()
+         if (is.null(df)) return(NULL)
+         
+         checkboxInput("amountflag", "Use values?", FALSE)
+       })
+       
+       #If we do want the optional column, this is where it gets created
+       output$amountCol <- renderUI({
+         df <-filedata()
+         if (is.null(df)) return(NULL)
+         #Let's only show numeric columns
+         nums <- sapply(df, is.numeric)
+         items=names(nums[nums])
+         names(items)=items
+         selectInput("amount", "Amount:",items)
+       })
+       
+       # This previews the CSV data file
+       output$filetable <- renderTable({
+        filedata()
+>>>>>>> a808d7e0d10014a0d1f08d11abac96ee68bc2c3b
           })
        
        
@@ -85,6 +134,7 @@ shinyServer(function(input, output, session)
             filedata2()
           })
        
+<<<<<<< HEAD
        
        output$fileinput <- renderPrint( 
          { 
@@ -96,6 +146,14 @@ shinyServer(function(input, output, session)
            RQdata <- read.csv(inFile$datapath)
            
            
+=======
+      
+       
+       output$fileinput <- renderPrint( 
+         { if(is.null(input$datafile)) return()
+           inFile <- input$datafile
+           RQdata <- read.csv(inFile$datapath)
+>>>>>>> a808d7e0d10014a0d1f08d11abac96ee68bc2c3b
              
            #Calculate geometric mean or score
            gm_mean <- function(x)
@@ -137,12 +195,17 @@ shinyServer(function(input, output, session)
                 RQMean <- apply(newdata2[, 2:12], 2, meanRQ)
                 print("Mean Expression of 11 genes:")
                 print(t(RQMean))
+<<<<<<< HEAD
                  
+=======
+              
+>>>>>>> a808d7e0d10014a0d1f08d11abac96ee68bc2c3b
               
                  sortMean <- sort(RQMean)
                  print("Rank of Gene by Expression:")
                  print(sortMean)
                  write.csv(newdata3, "outputRQ.csv")
+<<<<<<< HEAD
                  
                  data_mean2 <- t(RQdata)
                  data_mean3 <- as.data.frame(data_mean2)
@@ -159,13 +222,24 @@ shinyServer(function(input, output, session)
                  output$Histogram <- renderPlot(
                    {
                      hist(RQdata$CRMscore, col = "green")
+=======
+              
+                 
+                 output$Histogram <- renderPlot(
+                   {
+                 hist(RQdata$CRMscore)
+>>>>>>> a808d7e0d10014a0d1f08d11abac96ee68bc2c3b
                  }
                  )
                  
                  output$`Prediction Result` <- renderPlot(
                    { 
                      g <- ggplot(data= newdata3, aes(x=Sample, y=CRMscore, fill = CRMscore))
+<<<<<<< HEAD
                      p <- g + geom_bar(colour= "blue", stat= "identity")+ labs(title = "Prediction Results")+labs(x= "Patients")+ labs(y= "CRMScore") + theme_bw()+ theme_set(theme_grey(base_size= 18)) + theme(axis.text=element_text(size=12),
+=======
+                     p <- g + geom_bar(colour= "blue",stat= "identity")+ labs(title = "Prediction Results")+labs(x= "Patients")+ labs(y= "CRMScore") + theme_bw()+ theme_set(theme_grey(base_size= 18)) + theme(axis.text=element_text(size=12),
+>>>>>>> a808d7e0d10014a0d1f08d11abac96ee68bc2c3b
                                                                                                                                                                                                                 axis.title=element_text(size=18,face="bold"))
                      
                      print(p)
@@ -175,11 +249,15 @@ shinyServer(function(input, output, session)
                  
                  output$Plot3 <- renderPlot(
                    {
+<<<<<<< HEAD
                      #hist(RQMean)
                      g <- ggplot(final_data, aes(x = header, y= Means, fill= Means))
                      p2 <- g + geom_bar(colour= "red", stat= "identity") + labs(title = "Average Fold Change") + labs( x= "Genes") + labs( y = "Mean Fold Change")
                      
                      print(p2)
+=======
+                     hist(RQMean)
+>>>>>>> a808d7e0d10014a0d1f08d11abac96ee68bc2c3b
                    }
                  )
                  
